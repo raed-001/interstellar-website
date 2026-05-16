@@ -2002,15 +2002,42 @@ function goToService(segment, dest, service) {
 }
 
 /* --- Form submit ------------------------------------------------------- */
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzUCRy_4zH_V6s7tJFwFkzij3N2kHhl7FHtVzj6deY5l4V4QzkuLhwrIWKziFgOqyZn/exec';
+
 function submitLead(e) {
   e.preventDefault();
   const name  = document.getElementById('f-name').value.trim();
   const phone = document.getElementById('f-phone').value.trim();
   if (!name || !phone) { alert('Please enter your name and phone number.'); return; }
-  // POST to your CRM/endpoint here:
-  // fetch('/api/lead', { method: 'POST', body: new FormData(e.target) })
-  document.getElementById('leadForm').style.display = 'none';
-  document.getElementById('formSuccess').style.display = 'block';
+
+  const btn = e.target.querySelector('.form-submit');
+  btn.textContent = 'Sending…';
+  btn.disabled = true;
+
+  const payload = {
+    name,
+    phone,
+    email:      document.getElementById('f-email').value.trim(),
+    iam:        document.getElementById('f-segment').value,
+    interested: document.getElementById('f-service').value,
+    message:    document.getElementById('f-message').value.trim()
+  };
+
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(() => {
+    document.getElementById('leadForm').style.display = 'none';
+    document.getElementById('formSuccess').style.display = 'block';
+  })
+  .catch(() => {
+    btn.textContent = 'Send enquiry →';
+    btn.disabled = false;
+    alert('Something went wrong — please email us directly at istech@istechoman.com');
+  });
 }
 
 /* --- Chat widget ------------------------------------------------------- */
